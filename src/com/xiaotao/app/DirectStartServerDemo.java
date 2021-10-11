@@ -16,7 +16,7 @@ public class DirectStartServerDemo {
     public static void main(String[] args) throws IOException {
 
         // 使用文件资源操作器作为默认的操作器，并设定网站根目录为D盘
-        BindingMapping mapping = new BindingMapping(new FileResourceHandler("D:\\"));
+        BindingMapping mapping = new BindingMapping();
         mapping
             .addControllerObj(new TestController()) // 添加控制器对象
             .addMapping(HttpMethod.GET, "/simple", (request, response) -> "通过lambda创建HttpHandler并直接添加路由映射")

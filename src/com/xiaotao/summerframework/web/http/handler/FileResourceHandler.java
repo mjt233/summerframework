@@ -14,6 +14,7 @@ public class FileResourceHandler implements HttpHandler {
     private static final String MSG = "<h1><center>404 Not Found</center></h1><hr><p><center>Easy Http Server by Xiaotao</center></p>";
     private final String root;
     public FileResourceHandler(String root) {
+        logger.debug("root directory: " + root);
         this.root = root;
     }
 

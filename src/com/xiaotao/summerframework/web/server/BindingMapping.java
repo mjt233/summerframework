@@ -12,6 +12,7 @@ import com.xiaotao.summerframework.web.http.interceptor.HttpInterceptor;
 import com.xiaotao.summerframework.web.http.interceptor.HttpInterceptorConfiguration;
 import com.xiaotao.summerframework.web.http.interceptor.InterceptorChains;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,7 +25,12 @@ public class BindingMapping {
     private final MappingAutoRegister register = new MappingAutoRegister(this);
     private final ArrayList<HttpInterceptorConfiguration> interceptors = new ArrayList<>();
     public BindingMapping() {
-        this(new FileResourceHandler(""));
+        setDefaultHandler(new FileResourceHandler(new File("").getAbsolutePath()));
+    }
+
+    public BindingMapping(String root) {
+        root = new File(root).getAbsolutePath();
+        setDefaultHandler(new FileResourceHandler(root));
     }
 
     public BindingMapping(HttpHandler defaultHandler) {

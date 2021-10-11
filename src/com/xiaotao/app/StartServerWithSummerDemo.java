@@ -35,6 +35,7 @@ public class StartServerWithSummerDemo {
 
         HttpServerBuilder
                 .getInstance()
+                .setPort(8081)
                 .setBindingMapping(mapping)
                 .build()
                 .start();

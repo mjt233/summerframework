@@ -23,8 +23,7 @@ public class TestController {
 
     @RequestMapping("/img")
     public File img() {
-        String img = "D:\\bak\\图片资源\\图包\\【1】\\【1】图（55-60）(2016.2.15更新)\\56.【1】車谷浩司 - 鸟の诗 ~.jpg";
-        return new File(img);
+        return new File("static/img.jpg");
     }
 
     @RequestMapping("/cookie")
