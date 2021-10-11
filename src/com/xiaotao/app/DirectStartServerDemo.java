@@ -3,7 +3,6 @@ package com.xiaotao.app;
 import com.xiaotao.app.controller.TestController;
 import com.xiaotao.app.interceptor.LoginInterceptor;
 import com.xiaotao.summerframework.web.enums.HttpMethod;
-import com.xiaotao.summerframework.web.http.handler.FileResourceHandler;
 import com.xiaotao.summerframework.web.server.BindingMapping;
 import com.xiaotao.summerframework.web.server.HttpServerBuilder;
 

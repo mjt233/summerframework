@@ -23,6 +23,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Http服务器
+ */
 public class HttpServer {
     private static final Logger logger = new Logger(HttpServer.class);
     private ServerSocket serverSocket;
@@ -39,6 +42,9 @@ public class HttpServer {
     private final Map<Class<?>, HttpMessageConverter<Object>> converterCache = new ConcurrentHashMap<>();
     private final Thread sessionGCThread;
 
+    /**
+     * HTTP服务器线程池，通过自定义的线程工厂实现自定义线程名
+     */
     private final ExecutorService pool = Executors.newCachedThreadPool(new ThreadFactory() {
         private final AtomicLong threadNum = new AtomicLong();
         @Override
@@ -49,6 +55,14 @@ public class HttpServer {
         }
     });
 
+    /**
+     * 创建一个HTTP服务器实例
+     * @param ip        绑定的网络接口IP地址
+     * @param port      绑定的端口号
+     * @param mapping   路由映射对象
+     * @param converters    Http消息转换器集合
+     * @param sessionProvider Session提供者
+     */
     public HttpServer(String ip, int port,
                       BindingMapping mapping, List<HttpMessageConverter<Object>> converters,
                       HttpSessionProvider sessionProvider
@@ -58,32 +72,55 @@ public class HttpServer {
         this.mapping = mapping;
         this.converters = converters;
         this.sessionProvider = sessionProvider;
+
+        // 创建一个Session自动回收线程，用于定期移除过期Session
         this.sessionGCThread = new Thread(new HttpSessionGuard(sessionProvider));
+
+        // 将IP地址字符串转换成4Byte的IP地址字节序列
         int cnt = 0;
         for(String s:ip.split("\\.")) {
             ipBytes[cnt++] = (byte)Integer.parseInt(s);
         }
     }
 
+    /**
+     * 启动HTTP服务
+     * @throws IOException
+     */
     @SuppressWarnings("all")
     public void start() throws IOException {
+        // 初始化服务器
         init();
         logger.info("HTTP服务器已启动，端口:" + port + " 绑定地址：" + ip);
+
         while (true) {
+            // 开始等待用户网络接入
             Socket client = serverSocket.accept();
+
+            // 用户接入后，将连接处理任务提交到线程池执行
             pool.submit(() -> handleConnect(client));
         }
     }
 
+    /**
+     * 处理用户连接
+     * @param client 客户端Socket
+     */
     private void handleConnect(Socket client) {
+        // 先声明请求与响应对象
         HttpRequest request;
         HttpResponse response = null;
+
         // 注意：不可替换为try with写法，会导致进入cache块时socket被关闭而无法响应错误信息
         try {
+            // 初始化响应对象
             response = new HttpResponse(client);
+
             try {
+                // 初始化请求对象，HTTP请求报文的解析同时也在这里进行
                 request = new HttpRequest(client, sessionProvider);
             } catch (Exception e) {
+                // 报文解析出错，响应400错误码
                 e.printStackTrace();
                 String msg = "<h1 style=\"color: red\">Bad Request</h1><p>" + e.getMessage() + "</p>";
                 response.setStatus(400, "Bad Request");
@@ -91,8 +128,12 @@ public class HttpServer {
                 response.write(msg);
                 return;
             }
+
+            // 绑定Request和Response对象到上下文Holder
             HttpContextHolder.setRequest(request);
             HttpContextHolder.setResponse(response);
+
+            // 通过路由映射绑定对象获取将要处理的HttpHandler，并执行处理
             HttpHandler handler = mapping.getHandler(request.getMethod(), request.getURL());
             Object returnValue = handler.handle(request, response);
 
@@ -104,11 +145,14 @@ public class HttpServer {
                 // 处理HttpHandler的返回值
                 if (returnValue != null) handleReturnValue(returnValue, request, response);
                 else {
+                    // HttpHandler无返回值或返回Null，无需响应任何内容，触发一次Http响应头的发送即可
                     response.setContentLength(0);
                     response.write("");
                 }
             }
+            // HTTP流程正常结束
         } catch (Exception e) {
+            // Http处理流程出现异常，响应默认的服务器错误信息
             e.printStackTrace();
             if (response != null) {
                 try {
@@ -129,6 +173,7 @@ public class HttpServer {
                 } catch (Exception e2) {e2.printStackTrace();}
             }
         } finally {
+            // 移除当前线程的HttpContextHolder绑定的Request和Response对象并关闭HTTP连接
             HttpContextHolder.clear();
             if (client != null) {
                 try {
@@ -175,11 +220,15 @@ public class HttpServer {
         converter.handleConvertWrite(ret, req, resp);
     }
 
+    // 初始化服务器
     private void init() throws IOException {
         if (!inited) inited = true;
         else throw new IllegalStateException("重复初始化");
 
+        // 监听Socket
         serverSocket = new ServerSocket(port, 64, Inet4Address.getByAddress(ipBytes));
+
+        // Session自动回收守护线程启动
         sessionGCThread.start();
     }
 }

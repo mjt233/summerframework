@@ -3,6 +3,9 @@ package com.xiaotao.summerframework.web.http;
 
 import java.util.HashMap;
 
+/**
+ * 各个文件拓展名对应的Mime类型集合
+ */
 public class MimeTypeMap {
     private static final HashMap<String,String> map = new HashMap<>();
     static {
@@ -30,6 +33,11 @@ public class MimeTypeMap {
         map.put("mp4", "video/mpeg4");
     }
 
+    /**
+     * 获取一个文件拓展名对应的Mime类型
+     * @param name 文件拓展名
+     * @return 对应的Mime类型
+     */
     static public String getContentType(String name) {
         String res = map.get(name);
         return res == null ? "application/octet-stream" : res;

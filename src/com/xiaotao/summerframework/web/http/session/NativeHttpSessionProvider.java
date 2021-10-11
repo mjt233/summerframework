@@ -6,26 +6,38 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 简单的NativeSession提供者
+ */
 public class NativeHttpSessionProvider implements HttpSessionProvider {
     private final static Logger log = new Logger();
     private final Map<String, HttpSession> sessionStore = new ConcurrentHashMap<>();
     private final long liveAge;
-    private final String sessionIdKey;
+    private final String sessionIdCookieName;
 
+    /**
+     * 初始化提供者
+     * @param liveAge Session生存时间（单位毫秒）
+     */
     public NativeHttpSessionProvider(long liveAge) {
         this(liveAge, "ezSessionId");
     }
 
-    public NativeHttpSessionProvider(long liveAge, String sessionIdKey) {
+    /**
+     * 初始化提供者
+     * @param liveAge Session生存时间（单位毫秒）
+     * @param sessionIdCookieName Session的Cookie标识名
+     */
+    public NativeHttpSessionProvider(long liveAge, String sessionIdCookieName) {
         this.liveAge = liveAge;
-        this.sessionIdKey = sessionIdKey;
+        this.sessionIdCookieName = sessionIdCookieName;
     }
 
 
 
     @Override
     public String getSessionIdCookieName() {
-        return sessionIdKey;
+        return sessionIdCookieName;
     }
 
     @Override

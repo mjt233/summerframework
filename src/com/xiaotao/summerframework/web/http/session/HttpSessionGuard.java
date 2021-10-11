@@ -2,6 +2,9 @@ package com.xiaotao.summerframework.web.http.session;
 
 import com.xiaotao.summerframework.Logger;
 
+/**
+ * HttpSession守卫，定期执行过期Session移除
+ */
 public class HttpSessionGuard implements Runnable {
     private final static Logger logger = new Logger();
     private final HttpSessionProvider provider;

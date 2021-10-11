@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Http响应对象
+ */
 public class HttpResponse {
     private final static Logger logger = new Logger();
     public int code;
@@ -19,6 +22,11 @@ public class HttpResponse {
     protected Socket socket;
     protected boolean headerSend = false;
     private final List<Cookie> cookies = new ArrayList<>();
+
+    /**
+     * 初始化一个Http响应对象
+     * @param socket 客户端Socket
+     */
     public HttpResponse(Socket socket) {
         this.socket = socket;
         // 设定一些默认的Header
@@ -34,6 +42,8 @@ public class HttpResponse {
      */
     public void redirect(String url) throws IOException {
         StringBuilder sb = new StringBuilder();
+
+        // 重新拆分组装成一个安全的，特殊字符使用URL编码的URL
         for (String e : url.split("/+")) {
             if(!e.isBlank()) {
                 sb.append('/').append(URLEncoder.encode(e, StandardCharsets.UTF_8));
@@ -42,6 +52,9 @@ public class HttpResponse {
         if (url.endsWith("/")) sb.append('/');
         url = sb.toString();
         logger.debug("重定向 " + HttpContextHolder.getRequest().getURL() + " ====> " + url);
+
+
+        // 设置响应码和对应的HTTP响应头并发送响应
         setStatus(302, "Found");
         setHeader("Location", url);
         socket.getOutputStream().write(getHeaderContext().getBytes());

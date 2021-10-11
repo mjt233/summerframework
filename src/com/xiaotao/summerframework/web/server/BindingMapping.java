@@ -37,10 +37,21 @@ public class BindingMapping {
         setDefaultHandler(defaultHandler);
     }
 
+    /**
+     * 获取一个通过监听Summer Bean工厂装配事件自动注册路由的监听器
+     * @return 路由映射自动注册监听器器
+     */
     public MappingAutoRegister getBeanFactoryListenerRegister() {
         return register;
     }
 
+    /**
+     * 添加一个拦截器
+     * @param urlPattern    匹配的URL
+     * @param exceptPattern 排除的URL
+     * @param interceptor   拦截器
+     * @return 用于流式API调用的本身
+     */
     public BindingMapping addInterceptor(String urlPattern, String exceptPattern, HttpInterceptor interceptor) {
         interceptors.add(new HttpInterceptorConfiguration(urlPattern, exceptPattern, interceptor));
         return this;
@@ -108,10 +119,15 @@ public class BindingMapping {
         return this;
     }
 
+    /**
+     * 将原HttpHandler与拦截器链进行绑定，并以一个HttpHandler的形式对外暴露（设计模式：代理模式）
+     * 当handle方法被执行时，会先依次执行拦截器链前置处理，完全通过后，会再执行原HttpHandler，最后以原路返回的形式执行拦截器后置处理
+     */
     private static class HttpInterceptorHandler implements HttpHandler {
         private final HttpHandler handler;
         private final List<HttpInterceptorConfiguration> configurations;
         private final List<HttpInterceptor> matchedInterceptors = new ArrayList<>();
+
         public HttpInterceptorHandler(HttpHandler handler, List<HttpInterceptorConfiguration> interceptors) {
             this.handler = handler;
             this.configurations = interceptors;
@@ -127,6 +143,12 @@ public class BindingMapping {
         }
     }
 
+    /**
+     * 获取指定URL和HTTP请求方法所对应的HttpHandler
+     * @param method    HTTP请求方法
+     * @param url       请求URL
+     * @return          返回绑定了URL和方法的HttpHandler，若指定的URL和HTTP请求未匹配到一个映射，则返回默认的HttpHandler
+     */
     public HttpHandler getHandler(HttpMethod method, String url) {
         // 尝试在映射表中找到对应的操作器
         HttpHandler handler = mapping.get(getRouteDescribe(method, url));

@@ -5,13 +5,9 @@ import com.xiaotao.summerframework.web.http.session.HttpSession;
 public class HttpContextHolder {
     private static final ThreadLocal<HttpRequest> request = new ThreadLocal<>();
     private static final ThreadLocal<HttpResponse> response = new ThreadLocal<>();
-    private static final ThreadLocal<HttpSession> session = new ThreadLocal<>();
 
-    public static void setSession(HttpSession session) {
-        HttpContextHolder.session.set(session);
-    }
 
-    public static HttpSession getSession() { return HttpContextHolder.session.get(); }
+    public static HttpSession getSession() { return HttpContextHolder.request.get().getSession(); }
 
     public static HttpRequest getRequest() {
         return request.get();
@@ -32,6 +28,5 @@ public class HttpContextHolder {
     public static void clear() {
         response.remove();
         request.remove();
-        session.remove();
     }
 }

@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Http请求
+ */
 public class HttpRequest {
     private final static Logger logger = new Logger();
     private final HashMap<String,String> headers = new HashMap<>();
@@ -32,10 +35,20 @@ public class HttpRequest {
     public String originURL;
     public String protocol;
     public String queryString;
+
+    /**
+     * 构造一个Http请求对象并解析报文
+     * @param socket            连接Socket
+     * @param sessionProvider   Session提供者
+     * @throws IOException  IO出错
+     */
     public HttpRequest(Socket socket, HttpSessionProvider sessionProvider) throws IOException {
         this.sessionProvider = sessionProvider;
         this.br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        // 解析请求URL，方法，header，表单
         parseRequest();
+
+        // 若请求header中带有Session ID，则尝试从Session提供者中获取对应的Session
         String ssid = getCookie(sessionProvider.getSessionIdCookieName());
         if (ssid != null) {
             httpSession = sessionProvider.getSession(ssid);
@@ -43,6 +56,11 @@ public class HttpRequest {
         }
     }
 
+    /**
+     * 获取一个Session对象
+     * 若先前不存在Session则会创建一个
+     * @return HttpSession对象
+     */
     public HttpSession getSession() {
         if(httpSession == null) {
             httpSession = sessionProvider.createSession();
@@ -119,6 +137,10 @@ public class HttpRequest {
         }
     }
 
+    /**
+     * 解析请求头
+     * @throws IOException 请求头读取出错
+     */
     private void parseHeader() throws IOException  {
         // ====== 解析初始行 ========
         // 解析初始行 按空格分割
@@ -162,14 +184,28 @@ public class HttpRequest {
         }
     }
 
+    /**
+     * 获取一个Cookie值
+     * @param name Cookie名
+     * @return 值，不存在则返回null
+     */
     public String getCookie(String name) {
         return getCookie(name, null);
     }
 
+    /**
+     * 获取一个Cookie值
+     * @param name Cookie名
+     * @param defaultValue Cookie不存在时的默认值
+     * @return Cookie值或默认值
+     */
     public String getCookie(String name, String defaultValue) {
         return cookies.getOrDefault(name, defaultValue);
     }
 
+    /**
+     * 获取Cookie集合
+     */
     public Set<Map.Entry<String, String>> getCookies() {
         return cookies.entrySet();
     }
@@ -181,6 +217,9 @@ public class HttpRequest {
         this.parameters.putAll(QueryStringParser.parse(queryString));
     }
 
+    /**
+     * 解析请求体（仅支持Content-Type为x-www-form-urlencoded时进行解析，其他情况将直接抛出异常
+     */
     private void parseBody() throws IOException {
         String type = getHeader("Content-Type");
         String length = getHeader("Content-Length");
@@ -196,7 +235,11 @@ public class HttpRequest {
         }
     }
 
+    /**
+     * 解析post表单
+     */
     private void parseForm() throws IOException {
+        // 一次性初始化空间和读入数据
         int len = Integer.parseInt(getHeader("Content-Length"));
         char[] data = new char[len];
         if (br.read(data) == -1) throw new IOException("read body error");

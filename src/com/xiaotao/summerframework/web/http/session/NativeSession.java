@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * 使用HashMap实现的简单Session
+ */
 public class NativeSession implements HttpSession {
     private final String id;
     private final AtomicLong expiredAt = new AtomicLong();
