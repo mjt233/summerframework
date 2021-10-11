@@ -3,6 +3,7 @@ package com.xiaotao.summerframework.core.factory;
 import com.xiaotao.summerframework.Logger;
 import com.xiaotao.summerframework.core.util.StringUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -138,7 +139,9 @@ public class BeanFactory {
                 BeanConfigureInfoInfo depInstInfo = container.getOrDefault(dep, creating.get(dep));
                 if (depInstInfo != null) {
                     try {
-                        v.getClazz().getField(StringUtils.toSmallCamelCase(dep)).set(v.inst, depInstInfo.inst);
+                        Field field = v.getClazz().getDeclaredField(StringUtils.toSmallCamelCase(dep));
+                        field.setAccessible(true);
+                        field.set(v.inst, depInstInfo.inst);
                         cnt++;
                     } catch (IllegalAccessException | NoSuchFieldException e) {
                         e.printStackTrace();

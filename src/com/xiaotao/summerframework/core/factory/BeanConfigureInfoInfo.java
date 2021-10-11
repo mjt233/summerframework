@@ -58,7 +58,7 @@ public class BeanConfigureInfoInfo {
         }
 
         // 读取字段注入依赖
-        List<Field> fields = Arrays.stream(clazz.getFields())
+        List<Field> fields = Arrays.stream(clazz.getDeclaredFields())
                 .filter(e -> e.getAnnotation(Autowried.class) != null)
                 .collect(Collectors.toList());
         fieldDepends = new String[fields.size()];
