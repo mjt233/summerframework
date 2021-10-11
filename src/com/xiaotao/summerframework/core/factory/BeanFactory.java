@@ -10,14 +10,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Bean工厂，IoC容器的核心
+ */
 public class BeanFactory {
 
+    /**
+     * 可监听put方法执行的HashMap，直接继承了ConcurrentHashMap
+     */
     private static class ListenableHashMap
             extends ConcurrentHashMap<String, BeanConfigureInfoInfo> {
 
         private final List<Listener<BeanConfigureInfoInfo>> listeners = new ArrayList<>();
 
 
+        /**
+         * 添加put一个事件监听器，put入对象时触发
+         * @param listener  监听器
+         * @return  用于流式API调用的自己
+         */
         public ListenableHashMap addListener(Listener<BeanConfigureInfoInfo> listener) {
             synchronized (listeners) {
                 listeners.add(listener);
@@ -25,6 +36,12 @@ public class BeanFactory {
             return this;
         }
 
+        /**
+         * 放入一个已完成装配的Bean对象，同时触发所有的监听器
+         * @param key   Bean名
+         * @param value Bean对象实例
+         * @return 用于流式API调用的自己
+         */
         @Override
         public BeanConfigureInfoInfo put(String key, BeanConfigureInfoInfo value) {
             BeanConfigureInfoInfo info = super.put(key, value);
@@ -38,8 +55,20 @@ public class BeanFactory {
         }
     }
     private final static Logger logger = new Logger(BeanFactory.class);
+
+    /**
+     * 完成装配的单例Bean容器
+     */
     private final ListenableHashMap container = new ListenableHashMap();
+
+    /**
+     * 等待实例化的Bean
+     */
     private final Map<String, BeanConfigureInfoInfo> waiting = new ConcurrentHashMap<>();
+
+    /**
+     * 已完成实例化但存在未解决的依赖的半成品Bean
+     */
     private final Map<String, BeanConfigureInfoInfo> creating = new ConcurrentHashMap<>();
 
     private final static String banner =
@@ -67,23 +96,42 @@ public class BeanFactory {
         return this;
     }
 
+    /**
+     * 通过Bean名称获取一个Bean
+     * @param name 名称
+     * @return Bean对象，若不存在则为null
+     */
     public Object getBean(String name) {
-        return container.get(name);
+        BeanConfigureInfoInfo obj = container.get(name);
+        return obj == null ? null : obj.inst;
     }
 
+    /**
+     * 获取一个指定类型的Bean
+     * @param t 类型
+     * @return Bean对象，若不存在则为null
+     */
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> t) {
         Object bean = getBean(StringUtils.toSmallCamelCase(t.getSimpleName()));
-        if (bean != null) return (T)((BeanConfigureInfoInfo)bean).inst;
+        if (bean != null) return (T)bean;
         else return null;
     }
 
+    /**
+     * 注册一个需要装配的Bean信息
+     * @param info Bean信息
+     */
     public void registerBeanConfigureInfo(BeanConfigureInfoInfo info) {
         logger.debug("register bean: " + info);
+
+        // 如果Bean信息中已经包含了Bean实例就直接put到容器
         if (info.inst != null) {
             container.put(info.getName(), info);
             return;
         }
+
+        // 解析依赖信息，若构造器不存在依赖则直接实例化，随后再依据字段依赖信息的有无选择放入完成装配容器或半成品容器
         try {
             String[] depends = info.getConstructorDepends();
             if(depends.length == 0) {
@@ -103,11 +151,19 @@ public class BeanFactory {
         }
     }
 
+    /**
+     * 进行一轮尝试，对未实例化的Bean进行实例化
+     */
     private void tryConstructWaiting() {
+        // 对所有待实例化的Bean集合进行遍历
         waiting.forEach((key, value) -> {
+
+            // 找到的构造方法参数依赖计数
             int cnt = 0;
             String[] deps = value.getConstructorDepends();
             Object[] args = new Object[deps.length];
+
+            // 开始查找依赖
             for (int i = 0; i < deps.length; i++) {
                 BeanConfigureInfoInfo arg = container.get(deps[i]);
                 if (arg != null) {
@@ -115,14 +171,19 @@ public class BeanFactory {
                     cnt++;
                 }
             }
+
             if (deps.length == cnt) {
+                // 现有依赖满足构造方法需求则进行实例化操作
                 try {
                     value.inst = value.getConstructor().newInstance(args);
+
+                    // 依据字段依赖的有无选择放入完成装配容器或半成品容器
                     if (value.getFieldDepends().length == 0) {
                         container.put(key, value);
                     } else {
                         creating.put(key, value);
                     }
+                    // 从待实例化容器中移除自己
                     waiting.remove(key);
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException exception) {
                     exception.printStackTrace();
@@ -131,13 +192,22 @@ public class BeanFactory {
         });
     }
 
+    /**
+     * 尝试进行一轮半成品Bean的完全装配操作
+     */
     private void tryConstructCreating() {
+
+        // 对所有待装配的Bean集合进行遍历
         creating.forEach((k,v) -> {
             String[] deps = v.getFieldDepends();
+            // 已解决的依赖计数
             int cnt = 0;
+
+            // 查找存在的依赖
             for (String dep : deps) {
                 BeanConfigureInfoInfo depInstInfo = container.getOrDefault(dep, creating.get(dep));
                 if (depInstInfo != null) {
+                    // 找到依赖，注入到字段，已解决的依赖计数加一
                     try {
                         Field field = v.getClazz().getDeclaredField(StringUtils.toSmallCamelCase(dep));
                         field.setAccessible(true);
@@ -148,26 +218,36 @@ public class BeanFactory {
                     }
                 }
             }
+
+            // 已解决的依赖计数与依赖数相同时，表示该Bean已完成完全装配
             if (cnt == deps.length){
+                // 将Bean从半成品容器移动到完全装配容器
                 container.put(k, v);
                 creating.remove(k);
             }
         });
     }
 
+    /**
+     * 开始进行Bean装配工作，将解决所有待实例化和半成品Bean的依赖问题，若无法解决将抛出异常
+     */
     public void factor() {
-        // 注册自己
+        // 注册自己到容器（如果不存在的话）
         if (container.get("beanFactory") == null) {
             BeanConfigureInfoInfo self = BeanConfigureInfoInfo.getByClass(BeanFactory.class);
             self.inst = this;
             container.put("beanFactory", self);
         }
 
-        tryConstructCreating();
         int size = waiting.size();
-        // 对通过构造方法实例化的Bean进行构造
+
+        // 对未实例化的Bean进行实例化操作
         while (size > 0) {
+            // 进行一轮实例化尝试操作操作
             tryConstructWaiting();
+
+            // 进行一轮尝试后，待实例化的Bean数量未发生变化说明存在不可满足的依赖
+            // 此时只能摆烂了
             if (size == waiting.size()) {
                 StringBuilder sb = new StringBuilder();
                 waiting.forEach((k, v) -> sb.append(k).append(" "));
@@ -177,16 +257,27 @@ public class BeanFactory {
             }
         }
 
+        // 尝试对半成品Bean进行完全装配操作
         tryConstructCreating();
+
+        // 因为半成品Bean都只剩下了字段注入，若所有依赖均被满足，则应该会完成所有Bean的装配
+        // 若仍然存在半成品Bean未完成完全装配，则说明存在未被满足的依赖，摆烂
         if (creating.size() > 0) {
             throw new IllegalCallerException("Failed finish bean filed inject");
         }
+
+        // 初次装配完成，打印和ASCII字符画logo
         if (!bannerPrint) {
             bannerPrint = true;
             System.out.println(banner);
         }
     }
 
+    /**
+     * 添加一个Bean完成装配时候的监听器
+     * @param listener 监听器，Bean完成装配时触发
+     * @return  用于流式API调用的自己
+     */
     public BeanFactory addBeanReadyListener(Listener<BeanConfigureInfoInfo> listener) {
         container.addListener(listener);
         return this;

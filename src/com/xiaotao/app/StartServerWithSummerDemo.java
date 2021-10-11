@@ -1,5 +1,6 @@
 package com.xiaotao.app;
 
+import com.xiaotao.app.service.ServiceA;
 import com.xiaotao.summerframework.core.factory.BeanConfigureInfoFactory;
 import com.xiaotao.summerframework.core.factory.BeanFactory;
 import com.xiaotao.summerframework.web.annotation.WebController;
@@ -32,6 +33,11 @@ public class StartServerWithSummerDemo {
         // 注册好Bean配置信息后，开始装配所有Bean
         beanFactory.factor();
 
+        ServiceA bean = beanFactory.getBean(ServiceA.class);
+        System.out.println(bean);
+        System.out.println(bean.serviceB);
+        System.out.println(bean.serviceB.serviceC);
+        System.out.println(bean.serviceB.serviceC.serviceA);
 
         HttpServerBuilder
                 .getInstance()
