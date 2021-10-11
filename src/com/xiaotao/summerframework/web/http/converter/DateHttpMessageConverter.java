@@ -13,6 +13,8 @@ public class DateHttpMessageConverter implements HttpMessageConverter<Date> {
 
     @Override
     public void handleConvertWrite(Date date, HttpRequest request, HttpResponse response) throws Exception {
-        response.write(date + "");
+        String s = date + "";
+        response.setContentLength(s.getBytes().length);
+        response.write(s);
     }
 }

@@ -1,6 +1,5 @@
 package com.xiaotao.app;
 
-import com.xiaotao.app.controller.ApiController;
 import com.xiaotao.app.controller.TestController;
 import com.xiaotao.app.interceptor.LoginInterceptor;
 import com.xiaotao.summerframework.web.enums.HttpMethod;
@@ -20,7 +19,6 @@ public class DirectStartServerDemo {
         BindingMapping mapping = new BindingMapping(new FileResourceHandler("D:\\"));
         mapping
             .addControllerObj(new TestController()) // 添加控制器对象
-            .addControllerObj(new ApiController())
             .addMapping(HttpMethod.GET, "/simple", (request, response) -> "通过lambda创建HttpHandler并直接添加路由映射")
             .addInterceptor("/api/*", "/api/login", new LoginInterceptor());
 

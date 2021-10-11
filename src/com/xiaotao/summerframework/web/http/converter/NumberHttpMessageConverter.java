@@ -15,6 +15,8 @@ public class NumberHttpMessageConverter implements HttpMessageConverter<Object> 
 
     @Override
     public void handleConvertWrite(Object o, HttpRequest request, HttpResponse response) throws Exception {
-        response.write(o + "");
+        String s = o + "";
+        response.setContentLength(s.getBytes().length);
+        response.write(s);
     }
 }
