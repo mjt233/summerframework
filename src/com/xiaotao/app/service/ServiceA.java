@@ -7,7 +7,11 @@ import com.xiaotao.summerframework.web.server.HttpServer;
 @Service
 public class ServiceA {
     @Autowried
-    public ServiceB serviceB;
+    private ServiceB serviceB;
+
+    public long getTime() {
+        return System.currentTimeMillis();
+    }
 
     @Autowried
     public void httpServer(HttpServer server) {

@@ -2,10 +2,10 @@ package com.xiaotao.summerframework.web.http;
 
 
 import com.xiaotao.summerframework.Logger;
-import com.xiaotao.summerframework.web.server.BindingMapping;
 import com.xiaotao.summerframework.web.enums.HttpMethod;
 import com.xiaotao.summerframework.web.http.session.HttpSession;
 import com.xiaotao.summerframework.web.http.session.HttpSessionProvider;
+import com.xiaotao.summerframework.web.server.BindingMapping;
 import com.xiaotao.summerframework.web.util.QueryStringParser;
 
 import java.io.BufferedReader;
@@ -145,7 +145,6 @@ public class HttpRequest {
         // ====== 解析初始行 ========
         // 解析初始行 按空格分割
         String[] headLine = br.readLine().split(" ");
-
         // 获取请求方法
         method = HttpMethod.valueOf(headLine[0].toUpperCase());
 

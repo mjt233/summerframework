@@ -33,7 +33,7 @@ public class HttpResponse {
         setStatus(200, "OK");
         setHeader("Connection", "close");
         setHeader("Content-Type", "text/html;charset=utf-8");
-        setHeader("Server", "Easy HTTP Server");
+        setHeader("Server", "Jerry Mouse HTTP Server");
     }
 
     /**

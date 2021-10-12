@@ -50,7 +50,7 @@ public class HttpServer {
         @Override
         public Thread newThread(Runnable r) {
             Thread thread = new Thread(r);
-            thread.setName("easy-http-server-pool-" + threadNum.getAndIncrement());
+            thread.setName("Jerry-mouse-pool-" + threadNum.getAndIncrement());
             return thread;
         }
     });
@@ -91,8 +91,7 @@ public class HttpServer {
     public void start() throws IOException {
         // 初始化服务器
         init();
-        logger.info("HTTP服务器已启动，端口:" + port + " 绑定地址：" + ip);
-
+        logger.info("Jerry Mouse HTTP服务器已启动，端口:" + port + " 绑定地址：" + ip);
         pool.submit(() -> {
             while (true) {
                 // 开始等待用户网络接入

@@ -1,5 +1,7 @@
 package com.xiaotao.app.controller;
 
+import com.xiaotao.app.service.ServiceA;
+import com.xiaotao.summerframework.core.annotation.Autowried;
 import com.xiaotao.summerframework.web.annotation.RequestMapping;
 import com.xiaotao.summerframework.web.annotation.WebController;
 import com.xiaotao.summerframework.web.http.Cookie;
@@ -11,12 +13,14 @@ import java.util.Date;
 
 @WebController
 public class TestController {
+    @Autowried
+    private ServiceA serviceA;
 
-    @RequestMapping("/")
-    public String home() { return "Hello World"; }
+//    @RequestMapping("/")
+//    public String home() { return "Hello World"; }
 
     @RequestMapping("/unix")
-    public long unix() { return System.currentTimeMillis(); }
+    public long unix() { return serviceA.getTime(); }
 
     @RequestMapping("/date")
     public Date date() { return new Date(); }
