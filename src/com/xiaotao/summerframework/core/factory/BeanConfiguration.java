@@ -2,7 +2,7 @@ package com.xiaotao.summerframework.core.factory;
 
 import com.xiaotao.summerframework.core.annotation.Autowried;
 import com.xiaotao.summerframework.core.annotation.Bean;
-import com.xiaotao.summerframework.core.util.StringUtils;
+import com.xiaotao.summerframework.util.StringUtils;
 
 import java.lang.reflect.*;
 import java.util.Arrays;

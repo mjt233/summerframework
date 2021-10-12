@@ -1,4 +1,4 @@
-package com.xiaotao.summerframework.core.util;
+package com.xiaotao.summerframework.util;
 
 public class StringUtils {
     /**

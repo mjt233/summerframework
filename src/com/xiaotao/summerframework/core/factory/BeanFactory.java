@@ -1,7 +1,7 @@
 package com.xiaotao.summerframework.core.factory;
 
 import com.xiaotao.summerframework.Logger;
-import com.xiaotao.summerframework.core.util.StringUtils;
+import com.xiaotao.summerframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
