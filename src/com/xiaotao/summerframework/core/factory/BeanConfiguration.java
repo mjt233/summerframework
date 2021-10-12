@@ -16,7 +16,7 @@ public class BeanConfiguration {
     /**
      * Bean实例化方式
      */
-    public enum InstanceType {
+    public enum Type {
         /**
          * 通过构造方法实例化
          */
@@ -33,7 +33,7 @@ public class BeanConfiguration {
          */
         METHOD_CALL
     }
-    private final InstanceType instanceType;
+    private final Type type;
 
     /**
      * 如果采用方法调用，则存储方法对象，否则未null
@@ -112,10 +112,10 @@ public class BeanConfiguration {
         return new BeanConfiguration(clazz, constructor, name);
     }
 
-    public BeanConfiguration(Class<?> clazz, Method method, String beanName, String callerBeanName) {
+    public BeanConfiguration(Class<?> clazz, Method method, Type type, String beanName, String callerBeanName) {
         this.clazz = clazz;
         this.name = beanName;
-        this.instanceType = InstanceType.METHOD;
+        this.type = type;
         this.callerBeanName = callerBeanName;
         fieldDepends = new String[0];
 
@@ -139,7 +139,7 @@ public class BeanConfiguration {
         this.clazz = clazz;
         this.name = name;
         this.constructor = constructor;
-        this.instanceType = InstanceType.CONSTRUCTOR;
+        this.type = Type.CONSTRUCTOR;
 
         // 读取构造器依赖
         Parameter[] parameters = constructor.getParameters();
@@ -159,15 +159,18 @@ public class BeanConfiguration {
             fieldDepends[i++] = field.getName();
         }
 
-        // 读取@Bean注解标记的方法依赖注入
+        // 读取@Bean和@Autowried注解标记的方法注入
         Method[] methods = clazz.getDeclaredMethods();
         subBean = Arrays.stream(methods)
-                .filter(e -> e.getAnnotation(Bean.class) != null)
+                .filter(e -> e.getAnnotation(Bean.class) != null || e.getAnnotation(Autowried.class) != null)
                 .map(e -> {
                     Class<?> targetClazz = e.getReturnType();
-                    return new BeanConfiguration(
-                            targetClazz, e, StringUtils.toSmallCamelCase(targetClazz.getSimpleName()), name
-                    );
+                    String beanName = StringUtils.toSmallCamelCase(targetClazz.getSimpleName());
+                    if (e.getAnnotation(Bean.class) != null) {
+                        return new BeanConfiguration(targetClazz, e, Type.METHOD, beanName,name);
+                    } else {
+                        return new BeanConfiguration(null, e, Type.METHOD_CALL, beanName,name);
+                    }
                 }).collect(Collectors.toList());
 
     }
@@ -180,7 +183,7 @@ public class BeanConfiguration {
      * @return      Bean实例
      */
     public Object constructInst(Object obj, Object...args) throws IllegalAccessException, InvocationTargetException, InstantiationException {
-        if (instanceType == InstanceType.CONSTRUCTOR) {
+        if (type == Type.CONSTRUCTOR) {
             return constructor.newInstance(args);
         } else {
             return constructMethod.invoke(obj, args);
@@ -204,8 +207,8 @@ public class BeanConfiguration {
         return fieldDepends;
     }
 
-    public InstanceType getInstanceType() {
-        return instanceType;
+    public Type getType() {
+        return type;
     }
 
     public String getCallerBeanName() {

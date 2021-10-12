@@ -16,7 +16,6 @@ public class HttpService {
     @Autowried
     private BeanFactory beanFactory;
 
-
     @Bean
     public HttpServer httpServer() throws IOException {
         BindingMapping mapping = new BindingMapping("static");

@@ -8,8 +8,10 @@ import com.xiaotao.summerframework.web.server.HttpServer;
 public class ServiceA {
     @Autowried
     public ServiceB serviceB;
-    @Autowried
-    public HttpServer httpServer;
 
+    @Autowried
+    public void httpServer(HttpServer server) {
+        System.out.println("通过setter注入：" + server);
+    }
 
 }

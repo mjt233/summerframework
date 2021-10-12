@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -44,10 +45,11 @@ public class BeanFactory {
          */
         @Override
         public BeanConfiguration put(String key, BeanConfiguration value) {
+            if (value.inst == null) return null;
+            logger.debug("finish bean construct:" + value.getClazz().getName());
             BeanConfiguration info = super.put(key, value);
             synchronized (listeners) {
                 for (Listener<BeanConfiguration> listener : listeners) {
-                    logger.debug("finish bean construct:" + value.getClazz().getName());
                     listener.handleCallback(value);
                 }
             }
@@ -82,10 +84,6 @@ public class BeanFactory {
             "   |_____/ \\__,_|_| |_| |_|_| |_| |_|\\___|_|   \n" +
             "  ========:: A Fake Spring Framework ::======== \n" +
             "                                             ";
-    private boolean bannerPrint = false;
-
-    public BeanFactory() {
-    }
 
     /**
      * 向容器中直接添加一个Bean
@@ -136,13 +134,17 @@ public class BeanFactory {
             container.put(info.getName(), info);
             return;
         }
-        if (info.getInstanceType() == BeanConfiguration.InstanceType.METHOD) {
+
+        BeanConfiguration.Type type = info.getType();
+        if (type == BeanConfiguration.Type.METHOD) {
             waiting.put(info.getName(), info);
-            return;
+        } else if(type == BeanConfiguration.Type.METHOD_CALL) {
+            waiting.put(UUID.randomUUID().toString(), info);
+        } else if(type == BeanConfiguration.Type.CONSTRUCTOR) {
+            // 放入待实例化容器
+            waiting.put(info.getName(), info);
         }
 
-        // 放入待实例化容器
-        waiting.put(info.getName(), info);
     }
 
     /**
@@ -176,7 +178,7 @@ public class BeanFactory {
                     value.inst = value.constructInst(callerBean, args);
 
                     // 依据字段依赖的有无选择放入完成装配容器或半成品容器
-                    if (value.getFieldDepends().length == 0) {
+                    if (value.getFieldDepends().length == 0 && value.getType() != BeanConfiguration.Type.METHOD_CALL) {
                         container.put(key, value);
                     } else {
                         creating.put(key, value);
@@ -220,8 +222,8 @@ public class BeanFactory {
             // 已解决的依赖计数与依赖数相同时，表示该Bean已完成完全装配
             if (cnt == deps.length){
                 // 将Bean从半成品容器移动到完全装配容器
-                container.put(k, v);
                 creating.remove(k);
+                container.put(k, v);
             }
         });
     }
