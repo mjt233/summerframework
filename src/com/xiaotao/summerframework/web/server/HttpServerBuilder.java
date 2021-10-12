@@ -28,7 +28,8 @@ public class HttpServerBuilder {
                 .addConverter(new StringHttpMessageConverter())
                 .addConverter(new NumberHttpMessageConverter())
                 .addConverter(new DateHttpMessageConverter())
-                .addConverter(new FileHttpMessageConverter());
+                .addConverter(new FileHttpMessageConverter())
+                .addConverter(new JSONHttpMessageConverter());
     }
 
 

@@ -1,5 +1,6 @@
 package com.xiaotao.app.service;
 
+import com.xiaotao.app.interceptor.LoginInterceptor;
 import com.xiaotao.summerframework.core.annotation.Autowried;
 import com.xiaotao.summerframework.core.annotation.Bean;
 import com.xiaotao.summerframework.core.annotation.Component;
@@ -17,13 +18,20 @@ public class HttpService {
     private ListenableBeanFactory beanFactory;
 
     @Bean
-    public HttpServer httpServer() throws IOException {
+    public HttpServer httpServer() {
+        // 配置路由映射对象
         BindingMapping mapping = new BindingMapping("static");
         MappingAutoRegister listener = mapping.getBeanFactoryListenerRegister();
-        beanFactory.getAllBeanConfigureInfo()
-                .forEach(listener::handleCallback);
+        mapping.addInterceptor("/api/*", "/api/login", new LoginInterceptor());
+
+        beanFactory.getAllBeanConfigureInfo().forEach(listener::handleCallback);
         beanFactory.addBeanReadyListener(listener);
-        HttpServer server = HttpServerBuilder.getInstance().setBindingMapping(mapping).build();
+
+        HttpServer server = HttpServerBuilder
+                .getInstance()
+                .setBindingMapping(mapping)
+                .build();
+
         beanFactory.addBeanFinishConstructListener(e -> {
             try {
                 server.start();
@@ -31,6 +39,7 @@ public class HttpService {
                 ioException.printStackTrace();
             }
         });
+
         return server;
     }
 }

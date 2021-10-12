@@ -32,7 +32,7 @@ public class ApiController {
     }
 
     @RequestMapping("/api/getUserInfo")
-    public String getInfo(HttpSession session) {
-        return "您的用户信息为：" + session.getAttr("user");
+    public Object getInfo(HttpSession session) {
+        return session.getAttr("user");
     }
 }

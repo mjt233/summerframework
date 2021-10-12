@@ -1,5 +1,8 @@
 package com.xiaotao.app.entity;
 
+import com.xiaotao.summerframework.util.json.JSONObject;
+
+@JSONObject
 public class User {
     private String username;
     private String password;
