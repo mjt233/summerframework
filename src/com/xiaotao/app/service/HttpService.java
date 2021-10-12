@@ -3,7 +3,7 @@ package com.xiaotao.app.service;
 import com.xiaotao.summerframework.core.annotation.Autowried;
 import com.xiaotao.summerframework.core.annotation.Bean;
 import com.xiaotao.summerframework.core.annotation.Component;
-import com.xiaotao.summerframework.core.factory.BeanFactory;
+import com.xiaotao.summerframework.core.factory.ListenableBeanFactory;
 import com.xiaotao.summerframework.web.server.BindingMapping;
 import com.xiaotao.summerframework.web.server.HttpServer;
 import com.xiaotao.summerframework.web.server.HttpServerBuilder;
@@ -14,7 +14,7 @@ import java.io.IOException;
 @Component
 public class HttpService {
     @Autowried
-    private BeanFactory beanFactory;
+    private ListenableBeanFactory beanFactory;
 
     @Bean
     public HttpServer httpServer() throws IOException {
@@ -24,7 +24,13 @@ public class HttpService {
                 .forEach(listener::handleCallback);
         beanFactory.addBeanReadyListener(listener);
         HttpServer server = HttpServerBuilder.getInstance().setBindingMapping(mapping).build();
-        server.start();
+        beanFactory.addBeanFinishConstructListener(e -> {
+            try {
+                server.start();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
         return server;
     }
 }

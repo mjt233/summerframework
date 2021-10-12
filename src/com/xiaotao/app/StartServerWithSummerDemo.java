@@ -2,6 +2,7 @@ package com.xiaotao.app;
 
 import com.xiaotao.summerframework.core.factory.BeanConfigureInfoFactory;
 import com.xiaotao.summerframework.core.factory.BeanFactory;
+import com.xiaotao.summerframework.core.factory.ListenableBeanFactory;
 import com.xiaotao.summerframework.web.annotation.WebController;
 
 /**
@@ -10,7 +11,7 @@ import com.xiaotao.summerframework.web.annotation.WebController;
 public class StartServerWithSummerDemo {
     public static void main(String[] args) {
         // 创建Bean工厂和Bean配置信息工厂
-        BeanFactory beanFactory = new BeanFactory();
+        BeanFactory beanFactory = new ListenableBeanFactory();
         BeanConfigureInfoFactory configureInfoFactory = new BeanConfigureInfoFactory();
 
         configureInfoFactory                                    // 使用Bean配置工厂
