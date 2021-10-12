@@ -71,6 +71,8 @@ public class BeanFactory {
      */
     private final Map<String, BeanConfigureInfoInfo> creating = new ConcurrentHashMap<>();
 
+    private final List<Listener<BeanFactory>> finishListeners = new ArrayList<>();
+
     private final static String banner =
             "     _____                                     \n" +
             "    / ____|                                    \n" +
@@ -125,30 +127,22 @@ public class BeanFactory {
     public void registerBeanConfigureInfo(BeanConfigureInfoInfo info) {
         logger.debug("register bean: " + info);
 
+        if (info.getSubBean() != null && info.getSubBean().size() > 0) {
+            info.getSubBean().forEach(this::registerBeanConfigureInfo);
+        }
+
         // 如果Bean信息中已经包含了Bean实例就直接put到容器
         if (info.inst != null) {
             container.put(info.getName(), info);
             return;
         }
-
-        // 解析依赖信息，若构造器不存在依赖则直接实例化，随后再依据字段依赖信息的有无选择放入完成装配容器或半成品容器
-        try {
-            String[] depends = info.getConstructorDepends();
-            if(depends.length == 0) {
-                Object inst = info.getClazz().getConstructor().newInstance();
-                info.inst = inst;
-                if (info.getFieldDepends().length == 0) {
-                    container.put(info.getName(), info);
-                } else {
-                    creating.put(info.getName(), info);
-                }
-                info.inst = inst;
-            } else {
-                waiting.put(info.getName(), info);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (info.getInstanceType() == BeanConfigureInfoInfo.InstanceType.METHOD) {
+            waiting.put(info.getName(), info);
+            return;
         }
+
+        // 放入待实例化容器
+        waiting.put(info.getName(), info);
     }
 
     /**
@@ -157,7 +151,11 @@ public class BeanFactory {
     private void tryConstructWaiting() {
         // 对所有待实例化的Bean集合进行遍历
         waiting.forEach((key, value) -> {
-
+            String callerBeanName = value.getCallerBeanName();
+            Object callerBean = null;
+            if (callerBeanName != null && (callerBean = getBean(callerBeanName)) == null) {
+                return;
+            }
             // 找到的构造方法参数依赖计数
             int cnt = 0;
             String[] deps = value.getConstructorDepends();
@@ -175,7 +173,7 @@ public class BeanFactory {
             if (deps.length == cnt) {
                 // 现有依赖满足构造方法需求则进行实例化操作
                 try {
-                    value.inst = value.getConstructor().newInstance(args);
+                    value.inst = value.constructInst(callerBean, args);
 
                     // 依据字段依赖的有无选择放入完成装配容器或半成品容器
                     if (value.getFieldDepends().length == 0) {
@@ -232,17 +230,28 @@ public class BeanFactory {
      * 开始进行Bean装配工作，将解决所有待实例化和半成品Bean的依赖问题，若无法解决将抛出异常
      */
     public void factor() {
-        // 注册自己到容器（如果不存在的话）
+
+        // 注册自己到容器
         if (container.get("beanFactory") == null) {
             BeanConfigureInfoInfo self = BeanConfigureInfoInfo.getByClass(BeanFactory.class);
             self.inst = this;
             container.put("beanFactory", self);
+        } else {
+            // 已存在beanFactory的话说明已经执行过构造了
+            throw new IllegalStateException("bean factory has already finish bean construct");
         }
+
+        System.out.println(banner);
 
         int size = waiting.size();
 
+
         // 对未实例化的Bean进行实例化操作
         while (size > 0) {
+            // 先对半成品Bean进行初次完全装配
+            // 因为可能有一些未实例化的Bean依赖的Bean处于半成品状态但其实依赖已完善，而未满足完全依赖的半成品Bean，可能依赖了未实例化的Bean
+            tryConstructCreating();
+
             // 进行一轮实例化尝试操作操作
             tryConstructWaiting();
 
@@ -257,7 +266,7 @@ public class BeanFactory {
             }
         }
 
-        // 尝试对半成品Bean进行完全装配操作
+        // 对剩下的半成品Bean进行最后一次完全装配尝试
         tryConstructCreating();
 
         // 因为半成品Bean都只剩下了字段注入，若所有依赖均被满足，则应该会完成所有Bean的装配
@@ -266,11 +275,6 @@ public class BeanFactory {
             throw new IllegalCallerException("Failed finish bean filed inject");
         }
 
-        // 初次装配完成，打印和ASCII字符画logo
-        if (!bannerPrint) {
-            bannerPrint = true;
-            System.out.println(banner);
-        }
     }
 
     /**
@@ -281,5 +285,20 @@ public class BeanFactory {
     public BeanFactory addBeanReadyListener(Listener<BeanConfigureInfoInfo> listener) {
         container.addListener(listener);
         return this;
+    }
+
+    public BeanFactory addBeanFinishConstructListener(Listener<BeanFactory> listener) {
+        synchronized (finishListeners) {
+            finishListeners.add(listener);
+        }
+        return this;
+    }
+
+    /**
+     * 获取所有已完成装配的Bean配置信息
+     * @return 已完成装配的Bean信息
+     */
+    public List<BeanConfigureInfoInfo> getAllBeanConfigureInfo() {
+        return new ArrayList<>(container.values());
     }
 }

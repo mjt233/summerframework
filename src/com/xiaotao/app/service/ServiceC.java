@@ -8,7 +8,4 @@ public class ServiceC {
     @Autowried
     public ServiceA serviceA;
 
-//    public ServiceC(ServiceA c) {
-//        System.out.println(c);
-//    }
 }

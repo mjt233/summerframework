@@ -93,13 +93,15 @@ public class HttpServer {
         init();
         logger.info("HTTP服务器已启动，端口:" + port + " 绑定地址：" + ip);
 
-        while (true) {
-            // 开始等待用户网络接入
-            Socket client = serverSocket.accept();
+        pool.submit(() -> {
+            while (true) {
+                // 开始等待用户网络接入
+                Socket client = serverSocket.accept();
 
-            // 用户接入后，将连接处理任务提交到线程池执行
-            pool.submit(() -> handleConnect(client));
-        }
+                // 用户接入后，将连接处理任务提交到线程池执行
+                pool.submit(() -> handleConnect(client));
+            }
+        });
     }
 
     /**
