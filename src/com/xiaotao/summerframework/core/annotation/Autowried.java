@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * 当在字段中使用时，依赖的Bean会在目标对象被实例化后注入，允许出现循环依赖
  * 当在对象构造方法中使用时，依赖的Bean会注入到构造方法参数，若在构造方法中出现循环依赖，IoC容器将初始化失败
  */
-@Target({ElementType.FIELD, ElementType.CONSTRUCTOR})
+@Target({ElementType.FIELD, ElementType.CONSTRUCTOR, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Autowried {
 }

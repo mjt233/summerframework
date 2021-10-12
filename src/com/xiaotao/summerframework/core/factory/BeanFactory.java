@@ -19,9 +19,9 @@ public class BeanFactory {
      * 可监听put方法执行的HashMap，直接继承了ConcurrentHashMap
      */
     private static class ListenableHashMap
-            extends ConcurrentHashMap<String, BeanConfigureInfoInfo> {
+            extends ConcurrentHashMap<String, BeanConfiguration> {
 
-        private final List<Listener<BeanConfigureInfoInfo>> listeners = new ArrayList<>();
+        private final List<Listener<BeanConfiguration>> listeners = new ArrayList<>();
 
 
         /**
@@ -29,7 +29,7 @@ public class BeanFactory {
          * @param listener  监听器
          * @return  用于流式API调用的自己
          */
-        public ListenableHashMap addListener(Listener<BeanConfigureInfoInfo> listener) {
+        public ListenableHashMap addListener(Listener<BeanConfiguration> listener) {
             synchronized (listeners) {
                 listeners.add(listener);
             }
@@ -43,10 +43,10 @@ public class BeanFactory {
          * @return 用于流式API调用的自己
          */
         @Override
-        public BeanConfigureInfoInfo put(String key, BeanConfigureInfoInfo value) {
-            BeanConfigureInfoInfo info = super.put(key, value);
+        public BeanConfiguration put(String key, BeanConfiguration value) {
+            BeanConfiguration info = super.put(key, value);
             synchronized (listeners) {
-                for (Listener<BeanConfigureInfoInfo> listener : listeners) {
+                for (Listener<BeanConfiguration> listener : listeners) {
                     logger.debug("finish bean construct:" + value.getClazz().getName());
                     listener.handleCallback(value);
                 }
@@ -64,12 +64,12 @@ public class BeanFactory {
     /**
      * 等待实例化的Bean
      */
-    private final Map<String, BeanConfigureInfoInfo> waiting = new ConcurrentHashMap<>();
+    private final Map<String, BeanConfiguration> waiting = new ConcurrentHashMap<>();
 
     /**
      * 已完成实例化但存在未解决的依赖的半成品Bean
      */
-    private final Map<String, BeanConfigureInfoInfo> creating = new ConcurrentHashMap<>();
+    private final Map<String, BeanConfiguration> creating = new ConcurrentHashMap<>();
 
     private final List<Listener<BeanFactory>> finishListeners = new ArrayList<>();
 
@@ -92,7 +92,7 @@ public class BeanFactory {
      * @param bean 要添加的Bean
      */
     public BeanFactory addBeanInst(Object bean) {
-        BeanConfigureInfoInfo beanInfo = BeanConfigureInfoInfo.getByClass(bean.getClass());
+        BeanConfiguration beanInfo = BeanConfiguration.getByClass(bean.getClass());
         beanInfo.inst = bean;
         container.put(StringUtils.toSmallCamelCase(bean.getClass().getSimpleName()), beanInfo);
         return this;
@@ -104,7 +104,7 @@ public class BeanFactory {
      * @return Bean对象，若不存在则为null
      */
     public Object getBean(String name) {
-        BeanConfigureInfoInfo obj = container.get(name);
+        BeanConfiguration obj = container.get(name);
         return obj == null ? null : obj.inst;
     }
 
@@ -124,7 +124,7 @@ public class BeanFactory {
      * 注册一个需要装配的Bean信息
      * @param info Bean信息
      */
-    public void registerBeanConfigureInfo(BeanConfigureInfoInfo info) {
+    public void registerBeanConfigureInfo(BeanConfiguration info) {
         logger.debug("register bean: " + info);
 
         if (info.getSubBean() != null && info.getSubBean().size() > 0) {
@@ -136,7 +136,7 @@ public class BeanFactory {
             container.put(info.getName(), info);
             return;
         }
-        if (info.getInstanceType() == BeanConfigureInfoInfo.InstanceType.METHOD) {
+        if (info.getInstanceType() == BeanConfiguration.InstanceType.METHOD) {
             waiting.put(info.getName(), info);
             return;
         }
@@ -163,7 +163,7 @@ public class BeanFactory {
 
             // 开始查找依赖
             for (int i = 0; i < deps.length; i++) {
-                BeanConfigureInfoInfo arg = container.get(deps[i]);
+                BeanConfiguration arg = container.get(deps[i]);
                 if (arg != null) {
                     args[i] = arg.inst;
                     cnt++;
@@ -203,7 +203,7 @@ public class BeanFactory {
 
             // 查找存在的依赖
             for (String dep : deps) {
-                BeanConfigureInfoInfo depInstInfo = container.getOrDefault(dep, creating.get(dep));
+                BeanConfiguration depInstInfo = container.getOrDefault(dep, creating.get(dep));
                 if (depInstInfo != null) {
                     // 找到依赖，注入到字段，已解决的依赖计数加一
                     try {
@@ -233,7 +233,7 @@ public class BeanFactory {
 
         // 注册自己到容器
         if (container.get("beanFactory") == null) {
-            BeanConfigureInfoInfo self = BeanConfigureInfoInfo.getByClass(BeanFactory.class);
+            BeanConfiguration self = BeanConfiguration.getByClass(BeanFactory.class);
             self.inst = this;
             container.put("beanFactory", self);
         } else {
@@ -282,7 +282,7 @@ public class BeanFactory {
      * @param listener 监听器，Bean完成装配时触发
      * @return  用于流式API调用的自己
      */
-    public BeanFactory addBeanReadyListener(Listener<BeanConfigureInfoInfo> listener) {
+    public BeanFactory addBeanReadyListener(Listener<BeanConfiguration> listener) {
         container.addListener(listener);
         return this;
     }
@@ -298,7 +298,7 @@ public class BeanFactory {
      * 获取所有已完成装配的Bean配置信息
      * @return 已完成装配的Bean信息
      */
-    public List<BeanConfigureInfoInfo> getAllBeanConfigureInfo() {
+    public List<BeanConfiguration> getAllBeanConfigureInfo() {
         return new ArrayList<>(container.values());
     }
 }

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  * Bean装配配置信息类
  */
-public class BeanConfigureInfoInfo {
+public class BeanConfiguration {
     /**
      * Bean实例化方式
      */
@@ -76,14 +76,14 @@ public class BeanConfigureInfoInfo {
      */
     public Object inst;
 
-    private List<BeanConfigureInfoInfo> subBean;
+    private List<BeanConfiguration> subBean;
 
     /**
      * 通过.class获取整个类的依赖信息，会将类的构造方法和带有@Autowried注解的字段作为依赖
      * @param clazz 要解析的类
      * @return Bean配置信息
      */
-    public static BeanConfigureInfoInfo getByClass(Class<?> clazz) {
+    public static BeanConfiguration getByClass(Class<?> clazz) {
         // Bean名称，将类名转换为小驼峰命名即可
         String name = StringUtils.toSmallCamelCase(clazz.getSimpleName());
 
@@ -109,10 +109,10 @@ public class BeanConfigureInfoInfo {
                 constructor = maxLenConstructor;
             }
         }
-        return new BeanConfigureInfoInfo(clazz, constructor, name);
+        return new BeanConfiguration(clazz, constructor, name);
     }
 
-    public BeanConfigureInfoInfo(Class<?> clazz, Method method, String beanName, String callerBeanName) {
+    public BeanConfiguration(Class<?> clazz, Method method, String beanName, String callerBeanName) {
         this.clazz = clazz;
         this.name = beanName;
         this.instanceType = InstanceType.METHOD;
@@ -135,7 +135,7 @@ public class BeanConfigureInfoInfo {
      * @param constructor   使用的构造器
      * @param name          Bean名称
      */
-    public BeanConfigureInfoInfo(Class<?> clazz, Constructor<?> constructor, String name) {
+    public BeanConfiguration(Class<?> clazz, Constructor<?> constructor, String name) {
         this.clazz = clazz;
         this.name = name;
         this.constructor = constructor;
@@ -165,7 +165,7 @@ public class BeanConfigureInfoInfo {
                 .filter(e -> e.getAnnotation(Bean.class) != null)
                 .map(e -> {
                     Class<?> targetClazz = e.getReturnType();
-                    return new BeanConfigureInfoInfo(
+                    return new BeanConfiguration(
                             targetClazz, e, StringUtils.toSmallCamelCase(targetClazz.getSimpleName()), name
                     );
                 }).collect(Collectors.toList());
@@ -216,7 +216,7 @@ public class BeanConfigureInfoInfo {
         return constructor;
     }
 
-    public List<BeanConfigureInfoInfo> getSubBean() {
+    public List<BeanConfiguration> getSubBean() {
         return subBean;
     }
 

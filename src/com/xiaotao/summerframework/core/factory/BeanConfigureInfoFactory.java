@@ -35,8 +35,8 @@ public class BeanConfigureInfoFactory {
      * @param basePackage 包
      * @return Bean配置信息类集合
      */
-    public List<BeanConfigureInfoInfo> scanPackage(String basePackage) {
-        ArrayList<BeanConfigureInfoInfo> res = new ArrayList<>();
+    public List<BeanConfiguration> scanPackage(String basePackage) {
+        ArrayList<BeanConfiguration> res = new ArrayList<>();
         try {
             // 扫描包下的所有类（不完善，仅限本地.class文件）
             ClassUtils.scanClass(basePackage)
@@ -50,7 +50,7 @@ public class BeanConfigureInfoFactory {
                         }
                         return false;
                     })
-                    .forEach(e -> res.add(BeanConfigureInfoInfo.getByClass(e)));
+                    .forEach(e -> res.add(BeanConfiguration.getByClass(e)));
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

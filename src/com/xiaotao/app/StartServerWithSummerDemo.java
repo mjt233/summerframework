@@ -4,8 +4,6 @@ import com.xiaotao.summerframework.core.factory.BeanConfigureInfoFactory;
 import com.xiaotao.summerframework.core.factory.BeanFactory;
 import com.xiaotao.summerframework.web.annotation.WebController;
 
-import java.io.IOException;
-
 /**
  * 整合Summer框架进行开发
  */
