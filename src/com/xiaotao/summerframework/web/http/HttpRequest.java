@@ -23,18 +23,39 @@ import java.util.Set;
  */
 public class HttpRequest {
     private final static Logger logger = new Logger();
+
+    // 请求头
     private final HashMap<String,String> headers = new HashMap<>();
+
+    // 表单参数
     private final HashMap<String,String> parameters = new HashMap<>();
+
+    // HTTP请求报文输入流
     private final BufferedReader br;
+
+    // 小饼干
     private final HashMap<String, String> cookies = new HashMap<>();
+
+    // Session提供者
     private final HttpSessionProvider sessionProvider;
+
+    // Session
     private HttpSession httpSession;
 
-    public HttpMethod method;
-    public String URL;
-    public String originURL;
-    public String protocol;
-    public String queryString;
+    // 请求方法
+    private HttpMethod method;
+
+    // 去除了末尾的/和重复的/（如果有的话）URL
+    private String URL;
+
+    // 原始报文中的URL
+    private String originURL;
+
+    // 请求协议
+    private String protocol;
+
+    // URL中的查询字符串
+    private String queryString;
 
     /**
      * 构造一个Http请求对象并解析报文
@@ -244,5 +265,13 @@ public class HttpRequest {
         if (br.read(data) == -1) throw new IOException("read body error");
         String body = new String(data);
         this.parameters.putAll(QueryStringParser.parse(body));
+    }
+
+    public String getOriginURL() {
+        return originURL;
+    }
+
+    public String getQueryString() {
+        return queryString;
     }
 }

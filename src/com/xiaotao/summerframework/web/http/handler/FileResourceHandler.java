@@ -40,7 +40,7 @@ public class FileResourceHandler implements HttpHandler {
             path = Paths.get(path + "/index.html");
 
             // 为了确保主页文件使用的文件相对路径访问正常，重定向让浏览器在URL末尾加上/
-            if (!request.originURL.endsWith("/")) {
+            if (!request.getOriginURL().endsWith("/")) {
                 response.redirect(request.getURL() + "/");
                 return null;
             }
@@ -52,7 +52,7 @@ public class FileResourceHandler implements HttpHandler {
         } else {
             response.setStatus(404, "Not Found");
             response.write(MSG);
-            logger.info("资源不存在访问：" + request.URL);
+            logger.info("资源不存在访问：" + request.getURL());
         }
         return null;
     }
