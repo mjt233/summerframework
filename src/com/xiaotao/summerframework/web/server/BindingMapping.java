@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class BindingMapping {
-    private static final Logger logger  = new Logger(BindingMapping.class);
+    private static final Logger logger  = new Logger();
     private final HashMap<String, HttpHandler> mapping = new HashMap<>();
     private HttpHandler defaultHandler;
     private final MappingAutoRegister register = new MappingAutoRegister(this);

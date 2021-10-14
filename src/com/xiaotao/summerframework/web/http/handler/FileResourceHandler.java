@@ -13,7 +13,7 @@ import java.nio.file.Paths;
  * 本地文件静态资源操作器，可用作默认操作器实现静态文件资源的访问
  */
 public class FileResourceHandler implements HttpHandler {
-    private static final Logger logger = new Logger(FileResourceHandler.class);
+    private static final Logger logger = new Logger();
 
     // 资源不存在时的响应内容
     private static final String MSG = "<h1><center>404 Not Found</center></h1><hr><p><center>Easy Http Server by Xiaotao</center></p>";

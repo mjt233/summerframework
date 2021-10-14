@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Http服务器
  */
 public class HttpServer {
-    private static final Logger logger = new Logger(HttpServer.class);
+    private static final Logger logger = new Logger();
     private ServerSocket serverSocket;
     private boolean inited;
 

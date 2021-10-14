@@ -56,7 +56,7 @@ public class ListenableBeanFactory implements BeanFactory {
             return info;
         }
     }
-    private final static Logger logger = new Logger(ListenableBeanFactory.class);
+    private final static Logger logger = new Logger();
 
     /**
      * 完成装配的单例Bean容器
