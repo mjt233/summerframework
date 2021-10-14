@@ -5,7 +5,10 @@ import com.xiaotao.summerframework.core.annotation.Service;
 
 @Service
 public class ServiceB {
-    @Autowried
     public ServiceC serviceC;
 
+    @Autowried
+    public ServiceB(ServiceC serviceC) {
+        this.serviceC = serviceC;
+    }
 }

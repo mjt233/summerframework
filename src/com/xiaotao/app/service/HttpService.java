@@ -28,7 +28,7 @@ public class HttpService {
         beanFactory.addBeanReadyListener(listener);
 
         HttpServer server = HttpServerBuilder
-                .getInstance()
+                .create()
                 .setBindingMapping(mapping)
                 .build();
 

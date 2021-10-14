@@ -22,7 +22,7 @@ public class HttpServerBuilder {
      * 获取一个初始化的Http服务器建造器实例
      * @return 一个初始化的HttpServerBuilder
      */
-    public static HttpServerBuilder getInstance() {
+    public static HttpServerBuilder create() {
         // 添加5个默认的HttpMessageConverter
         return new HttpServerBuilder()
                 .addConverter(new StringHttpMessageConverter())
@@ -97,5 +97,25 @@ public class HttpServerBuilder {
                 sessionProvider == null ? new NativeHttpSessionProvider(30 * 60 * 60 * 1000) : sessionProvider
             );
 
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public List<HttpMessageConverter<Object>> getConverters() {
+        return converters;
+    }
+
+    public HttpSessionProvider getSessionProvider() {
+        return sessionProvider;
+    }
+
+    public BindingMapping getMapping() {
+        return mapping;
     }
 }

@@ -7,8 +7,9 @@ import java.io.IOException;
 
 public class SimpleHttpServerDemo {
     public static void main(String[] args) throws IOException {
-        HttpServerBuilder.getInstance()
-                .setBindingMapping(new BindingMapping("static"))
+        BindingMapping mapping = new BindingMapping("static");
+        HttpServerBuilder.create()
+                .setBindingMapping(mapping)
                 .build()
                 .start();
     }

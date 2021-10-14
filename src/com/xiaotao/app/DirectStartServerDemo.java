@@ -14,14 +14,14 @@ import java.io.IOException;
 public class DirectStartServerDemo {
     public static void main(String[] args) throws IOException {
 
-        // 使用文件资源操作器作为默认的操作器，并设定网站根目录为D盘
-        BindingMapping mapping = new BindingMapping();
+        // 使用文件资源操作器作为默认的操作器，并设定网站根目录项目目录下的static
+        BindingMapping mapping = new BindingMapping("static");
         mapping
             .addControllerObj(new TestController()) // 添加控制器对象
             .addMapping(HttpMethod.GET, "/simple", (request, response) -> "通过lambda创建HttpHandler并直接添加路由映射")
             .addInterceptor("/api/*", "/api/login", new LoginInterceptor());
 
-        HttpServerBuilder.getInstance()
+        HttpServerBuilder.create()
                 .setBindingMapping(mapping)
                 .build().start();
     }
