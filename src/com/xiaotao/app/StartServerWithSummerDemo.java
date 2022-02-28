@@ -21,5 +21,6 @@ public class StartServerWithSummerDemo {
 
         // 注册好Bean配置信息后，开始装配所有Bean
         beanFactory.factor();
+        System.out.println("=====================服务已启动完成=======================");
     }
 }

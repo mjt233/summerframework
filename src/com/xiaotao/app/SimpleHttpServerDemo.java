@@ -15,5 +15,6 @@ public class SimpleHttpServerDemo {
                 .setBindingMapping(mapping)
                 .build()
                 .start();
+        System.out.println("=====================服务已启动完成=======================");
     }
 }

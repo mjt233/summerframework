@@ -5,6 +5,8 @@ import com.xiaotao.summerframework.core.annotation.Autowried;
 import com.xiaotao.summerframework.core.annotation.Bean;
 import com.xiaotao.summerframework.core.annotation.Component;
 import com.xiaotao.summerframework.core.factory.ListenableBeanFactory;
+import com.xiaotao.summerframework.web.http.session.HttpSession;
+import com.xiaotao.summerframework.web.http.session.HttpSessionProvider;
 import com.xiaotao.summerframework.web.server.BindingMapping;
 import com.xiaotao.summerframework.web.server.HttpServer;
 import com.xiaotao.summerframework.web.server.HttpServerBuilder;
