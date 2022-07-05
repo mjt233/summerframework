@@ -266,7 +266,7 @@ public class ListenableBeanFactory implements BeanFactory {
             if (size == waiting.size()) {
                 StringBuilder sb = new StringBuilder();
                 waiting.forEach((k, v) -> sb.append(k).append(" "));
-                throw new IllegalCallerException("Failed finish bean construct: " + sb);
+                throw new IllegalStateException("Failed finish bean construct: " + sb);
             } else {
                 size = waiting.size();
             }
@@ -278,7 +278,7 @@ public class ListenableBeanFactory implements BeanFactory {
         // 因为半成品Bean都只剩下了字段注入，若所有依赖均被满足，则应该会完成所有Bean的装配
         // 若仍然存在半成品Bean未完成完全装配，则说明存在未被满足的依赖，摆烂
         if (creating.size() > 0) {
-            throw new IllegalCallerException("Failed finish bean filed inject");
+            throw new IllegalStateException("Failed finish bean filed inject");
         }
 
         System.out.println(banner);

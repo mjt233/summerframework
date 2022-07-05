@@ -2,6 +2,7 @@ package com.xiaotao.summerframework.web.http;
 
 
 import com.xiaotao.summerframework.Logger;
+import com.xiaotao.summerframework.util.StringUtils;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -45,8 +46,8 @@ public class HttpResponse {
 
         // 重新拆分组装成一个安全的，特殊字符使用URL编码的URL
         for (String e : url.split("/+")) {
-            if(!e.isBlank()) {
-                sb.append('/').append(URLEncoder.encode(e, StandardCharsets.UTF_8));
+            if(!StringUtils.isBlank(e)) {
+                sb.append('/').append(URLEncoder.encode(e, StandardCharsets.UTF_8.toString()));
             }
         }
         if (url.endsWith("/")) sb.append('/');

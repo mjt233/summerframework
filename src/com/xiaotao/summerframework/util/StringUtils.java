@@ -2,6 +2,25 @@ package com.xiaotao.summerframework.util;
 
 public class StringUtils {
     /**
+     * 判断字符串是否为空白字符串（只有空格）或空字符串
+     * @param str   输入的字符串
+     * @return      true or false
+     */
+    public static boolean isBlank(String str) {
+        if (str == null || str.isEmpty()) {
+            return true;
+        }
+
+        int len = str.length();
+        for (int i = 0; i < len; i++) {
+            if (str.charAt(i) != ' ') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * 大驼峰转小驼峰命名
      * @param input 大驼峰字符串
      * @return 小驼峰字符串

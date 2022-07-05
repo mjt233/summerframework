@@ -2,6 +2,7 @@ package com.xiaotao.summerframework.web.http;
 
 
 import com.xiaotao.summerframework.Logger;
+import com.xiaotao.summerframework.util.StringUtils;
 import com.xiaotao.summerframework.web.enums.HttpMethod;
 import com.xiaotao.summerframework.web.http.session.HttpSession;
 import com.xiaotao.summerframework.web.http.session.HttpSessionProvider;
@@ -11,9 +12,9 @@ import com.xiaotao.summerframework.web.util.QueryStringParser;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -181,8 +182,8 @@ public class HttpRequest {
 
         // 对原始URL重复和末尾的/进行去除
         for (String s : originURL.split("/")) {
-            if(s.isBlank()) continue;
-            uriBuilder.append('/').append(URLDecoder.decode(s, StandardCharsets.UTF_8));
+            if(StringUtils.isBlank(s)) continue;
+            uriBuilder.append('/').append(URLDecoder.decode(s, "utf-8"));
         }
         URL = uriBuilder.length() == 0 ? "/" : uriBuilder.toString();
 
@@ -233,7 +234,7 @@ public class HttpRequest {
     /**
      * 解析表单参数
      */
-    private void parseParameter() {
+    private void parseParameter() throws UnsupportedEncodingException {
         this.parameters.putAll(QueryStringParser.parse(queryString));
     }
 

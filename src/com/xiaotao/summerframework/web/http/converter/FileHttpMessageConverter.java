@@ -39,7 +39,7 @@ public class FileHttpMessageConverter implements HttpMessageConverter<Object> {
             throw new IllegalArgumentException("unsupported resource class type:" + file.getClass().getName());
         }
 
-        String disposition = "inline;filename*=UTF-8''"+ URLEncoder.encode(name, StandardCharsets.UTF_8);
+        String disposition = "inline;filename*=UTF-8''"+ URLEncoder.encode(name, StandardCharsets.UTF_8.toString());
         response.setContentType(MimeTypeMap.getContentType(name.substring(name.lastIndexOf('.')+1)))
                 .setContentLength(length)
                 .setHeader("Content-Disposition", disposition);
